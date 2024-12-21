@@ -1,6 +1,14 @@
 // src/routes/taskRoutes.js
 const express = require("express");
-const { initializeTasks, viewTasks, assignTasksToMasterById ,assignTasksToSuperAdminById} = require("../controller/taskController");
+const { 
+  initializeTasks, 
+  viewTasks, 
+  assignTasksToMaster,
+  assignMasterTasksToSuperAdmin,
+  createMasterForOwner,
+  addSuperAdminToMasterData
+} = require("../controller/taskController");
+
 const { protect, authorize } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -12,7 +20,11 @@ router.post("/initialize", protect, authorize("owner"), initializeTasks);
 router.get("/view", protect, viewTasks);
 
 // Assign tasks (owner -> master -> superadmin -> admin)
-router.put("/assign/master/:masterId", protect,authorize("owner"), assignTasksToMasterById);
-router.put("/assign/superAdmin/:superAdminId", protect,authorize("master"), assignTasksToMasterById);
+router.post("/assign/master/:ownerId/:masterId", protect, assignTasksToMaster);
+router.post("/assign/superAdmin/:ownerId/:masterId/:superAdminId", protect, assignMasterTasksToSuperAdmin);
+
+// Create SuperAdmins for Master (only accessible by Master)
+router.post("/master/:ownerId", protect, createMasterForOwner);
+router.post("/superadmin/:masterId", protect, addSuperAdminToMasterData);
 
 module.exports = router;
